@@ -373,3 +373,101 @@ SELECT
 	corr(company_size,salary_in_usd)
 FROM salaries
 ;
+
+-- Віконні функції
+select  
+	job_title
+	, ROUND(AVG(salary_in_usd),0) as avg_salary
+from salaries s 
+group by 1
+;
+
+	
+select
+	job_title
+	, salary_in_usd 
+	, AVG(salary_in_usd) OVER(partition by job_title) as avg_salary
+	, MIN(salary_in_usd) OVER(partition by job_title) as min_salary
+	, MAX(salary_in_usd) OVER(partition by job_title) as max_salary
+	, COUNT(salary_in_usd ) OVER(partition by job_title) as job_cnt
+from salaries s 
+;
+
+
+with cte as (
+	select
+		job_title
+		, salary_in_usd 
+		, SUM(salary_in_usd) OVER(partition by job_title order by salary_in_usd) as sum_salary
+		--, AVG(salary_in_usd) OVER(partition by job_title) as avg_salary
+		--, MIN(salary_in_usd) OVER(partition by job_title) as min_salary
+		--, MAX(salary_in_usd) OVER(partition by job_title) as max_salary
+		--, COUNT(salary_in_usd ) OVER(partition by job_title) as job_cnt
+	from salaries s 
+	where year = 2023
+)
+
+select *
+	, salary_in_usd::float/max_salary as ratio_max
+	, salary_in_usd/avg_salary as ratio_avg
+from cte
+;
+
+
+with cte as (
+	select
+		job_title
+		, salary_in_usd 
+		, AVG(salary_in_usd) OVER(partition by job_title) as avg_salary	
+	from salaries s 
+	where year = 2023
+)
+
+select *
+from cte
+where salary_in_usd > avg_salary
+;
+
+
+--select *
+--from information_schema.colums
+--;
+
+-- Створюємо нову таблицю
+create table test(
+		col_1 text
+		,col_2 int
+)
+;
+
+-- ALTER + ADD - додаємо нову колонку
+alter table test
+add column col_3 text
+;
+
+-- ALTER + RENAME - перемейновуємо колонку
+alter table test
+rename column col_3 to col_4
+;
+
+-- ALTER + DROP COLUMN - видаляємо колонку
+alter table test
+drop column col_4
+;
+
+--INSERT INTO + VALUES - додаемо рядки (значення)
+insert into test (col_1, col_2)
+values ('text', 1)
+;
+
+select *
+from test t
+;
+
+--Створюємо дублікат таблиці
+create table test_copy as
+select * from test t 
+;
+
+--Видалення таблиці
+drop table test_copy

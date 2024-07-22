@@ -33,3 +33,24 @@
 **TOP (або LIMIT)**: Вибрані рядки можуть бути обмежені за допомогою TOP (в SQL Server) або LIMIT (в багатьох інших СУБД)
 
 **OFFSET**: dictates the number of rows to skip from the beginning of the returned data before presenting the results. 
+
+## JOIN
+
+USING(...id)
+
+![alt text](https://miro.medium.com/v2/resize%3Afit%3A1100/format%3Awebp/1%2Aav8Om3HpG1MC7YTLKvyftg.png)
+
+## UNION
+
+
+[Picture](/Users/olenailina/sources/my_practice/1714965101124.png)
+
+![alt text](https://www.sqlservertutorial.net/wp-content/uploads/SQL-Server-UNION-vs-JOIN.png)
+
+
+**INTERSECT** and **EXCEPT**
+![alt text](image.png)
+
+![alt text](https://www.sqlservertutorial.net/wp-content/uploads/SQL-Server-INTERSECT-Illustration.png)
+
+![alt text](https://www.sqlservertutorial.net/wp-content/uploads/SQL-Server-EXCEPT-illustration.png)
