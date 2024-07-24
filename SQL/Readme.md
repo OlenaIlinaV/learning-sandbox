@@ -34,6 +34,10 @@
 
 **OFFSET**: dictates the number of rows to skip from the beginning of the returned data before presenting the results. 
 
+## JOIN VS UNION
+![alt text](/Pictures/join_vs_union.png)
+![alt text](https://www.sqlservertutorial.net/wp-content/uploads/SQL-Server-UNION-vs-JOIN.png)
+
 ## JOIN
 
 USING(...id)
@@ -43,14 +47,16 @@ USING(...id)
 ## UNION
 
 
-[Picture](/Users/olenailina/sources/my_practice/1714965101124.png)
-
-![alt text](https://www.sqlservertutorial.net/wp-content/uploads/SQL-Server-UNION-vs-JOIN.png)
-
 
 **INTERSECT** and **EXCEPT**
-![alt text](image.png)
+
+![alt text](/Pictures/union.png)
 
 ![alt text](https://www.sqlservertutorial.net/wp-content/uploads/SQL-Server-INTERSECT-Illustration.png)
 
 ![alt text](https://www.sqlservertutorial.net/wp-content/uploads/SQL-Server-EXCEPT-illustration.png)
+
+
+## Can be useful
+
+**ENUM** is short for enumeration, meaning it consists of a predefined list of values that a variable or column can take.
