@@ -148,3 +148,7 @@ SQL Server uses SELECT TOP. MySQL uses LIMIT, and Oracle uses ROWNUM (with =).
 
 **DATEDIFF()** function returns the number of days between two date values  
 `SELECT DATEDIFF("2017-06-25", "2017-06-15");`
+
+**IF() Function**  
+`SELECT IF(500<1000, "YES", "NO");`
+`SELECT IF(500<1000, 1, 0);`
