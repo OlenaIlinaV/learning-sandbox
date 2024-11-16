@@ -230,3 +230,96 @@ WHERE 1=1
 ;
 
 --3-------------------------------------------------------
+
+SELECT 
+	customer_id AS Customer
+	,SUM(amount) Sum
+	,ROUND(AVG(amount),2) Avg
+	,MIN(amount) Min
+FROM public.payment
+GROUP BY customer_id
+ORDER BY customer_id
+;
+
+SELECT
+	MIN(replacement_cost) min
+	,MAX(replacement_cost) max
+	,ROUND(AVG(replacement_cost),2) avg 
+	,SUM(replacement_cost) sum
+FROM public.film
+;
+
+SELECT
+	staff_id
+	,COUNT(*)
+	,SUM(amount)
+FROM public.payment
+GROUP BY staff_id
+ORDER BY SUM(amount) DESC
+--LIMIT 1
+;
+
+SELECT
+	staff_id
+	,COUNT(*)
+	,SUM(amount)
+FROM public.payment
+WHERE amount != 0
+GROUP BY staff_id
+ORDER BY SUM(amount) DESC
+--LIMIT 1
+;
+
+SELECT
+	staff_id
+	,customer_id
+	,COUNT(*)
+	,SUM(amount)
+FROM public.payment
+GROUP BY staff_id, customer_id
+ORDER BY COUNT(*) DESC
+;
+
+SELECT
+	DATE(payment_date)
+	,staff_id
+	,SUM(amount)
+	,COUNT(*)
+FROM public.payment
+GROUP BY staff_id, DATE(payment_date)
+ORDER BY SUM(amount) DESC
+;
+
+SELECT
+	DATE(payment_date)
+	,staff_id
+	,SUM(amount)
+	,COUNT(*)
+FROM public.payment
+WHERE amount != 0
+GROUP BY staff_id, DATE(payment_date)
+HAVING COUNT(*) > 300
+ORDER BY SUM(amount) DESC
+;
+
+select
+    City
+    ,AVG(Amount) AS AverageAmount
+from Sales
+group by City
+having AVG(Amount) > 150.00 and COUNT(TransactionID) > 2
+order by AverageAmount DESC
+;
+
+SELECT
+	customer_id
+	,DATE(payment_date)
+	,ROUND(AVG(amount),2) AS AVG_amount
+FROM public.payment
+WHERE DATE(payment_date) BETWEEN '2020-04-28' AND '2020-04-30 23:59'
+GROUP BY customer_id, DATE(payment_date)
+HAVING COUNT(payment_id) > 1
+ORDER BY AVG_amount DESC
+;
+
+--4-------------------------------------------------------
