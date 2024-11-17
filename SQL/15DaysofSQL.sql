@@ -323,3 +323,102 @@ ORDER BY AVG_amount DESC
 ;
 
 --4-------------------------------------------------------
+--FUNCTIONS
+--UPPER, LOWER, LENGHT
+
+SELECT
+	email
+	,UPPER(email) AS email_upper
+	,LOWER(email) AS email_lower
+	,LENGTH(email)
+FROM public.customer
+WHERE LENGTH(email) < 30
+;
+
+select
+    review_id
+    ,review_text
+    ,LENGTH(review_text) AS review_length
+from customer_reviews
+where product_id = 101 AND review_text LIKE '%great%'
+order by review_length ASC
+;
+
+SELECT
+	customer_id
+	,LOWER(first_name) AS lower_first_name
+	,LOWER(last_name) AS lower_last_name
+	,LOWER(email) AS llower_email
+	,LENGTH(first_name) AS length_first_name
+	,LENGTH(last_name) AS length_last_name
+FROM public.customer
+WHERE LENGTH(first_name) > 10 OR LENGTH(last_name) > 10
+;
+
+--LEFT, RIGHT
+
+SELECT
+	LEFT(first_name,2)
+	,RIGHT(first_name,2)
+	,first_name
+	,RIGHT(LEFT(first_name,2),1)
+FROM customer
+;
+
+SELECT
+	email
+	,RIGHT(email,5) AS last_5
+	,LEFT(RIGHT(email,4),1) AS dot
+FROM public.customer
+;
+
+-- CONCATENATE ||
+
+SELECT 
+	first_name
+	,last_name
+	,LEFT(first_name,1) || '.' ||LEFT(last_name,1) || '.' AS initials
+FROM public.customer
+;
+
+select
+    name || ' - ' || category || ': $' || price AS product_summary
+from products
+order by name ASC
+;
+
+SELECT
+	email
+	,LEFT(email,1) || '***@sakilacustomer.org' AS anonymized_email
+FROM public.customer
+;
+
+-- POSITION
+
+SELECT
+	POSITION('@' IN email)
+	,LEFT(email, POSITION('@' IN email)-1)
+	,POSITION(first_name IN email)
+	,POSITION(last_name IN email)
+	,email
+FROM public.customer
+;
+
+SELECT
+	email
+	,last_name
+	,last_name || ', ' || LEFT(email,POSITION('.' IN email)-1) AS name_sername
+FROM public.customer
+;
+
+-- SUBSTRING
+
+SELECT
+	email
+	,SUBSTRING(email from 2)
+	,SUBSTRING(email from 2 for 6)
+	,SUBSTRING(email from POSITION('.' IN email)+1 for LENGTH(last_name))
+	,SUBSTRING(email from POSITION('.' IN email)+1 for (POSITION('@' IN email)-POSITION('.' IN email)-1))
+	,POSITION('@' IN email)
+FROM public.customer
+;
