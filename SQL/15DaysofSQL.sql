@@ -422,3 +422,115 @@ SELECT
 	,POSITION('@' IN email)
 FROM public.customer
 ;
+
+--Challenge
+SELECT
+	email
+	,LEFT(email, 1) || '***' || LEFT(SUBSTRING(email from POSITION('.' IN email)),2) || '***' || SUBSTRING(email from POSITION('@' IN email)+1) AS anonymized_1
+	,'***' || RIGHT(SUBSTRING(email from 1 for POSITION('.' IN email)-1),1) || LEFT(SUBSTRING(email from POSITION('.' IN email)),2) || '***' || SUBSTRING(email from POSITION('@' IN email)+1) AS anonymized_2
+	,'***' || SUBSTRING(email from POSITION('.' IN email) -1 for 3 ) || '***' || SUBSTRING(email from POSITION('@' IN email)) AS anonymized_LECTOR
+FROM public.customer
+;
+
+-- EXTRACT used to EXTRACT parts of timestamp/date
+
+SELECT
+	EXTRACT(day from rental_date)
+	,COUNT(*)
+FROM public.rental
+GROUP BY EXTRACT(day from rental_date)
+ORDER BY COUNT(*) DESC
+;
+
+--Challenge
+SELECT
+	EXTRACT(month from payment_date) AS Month
+	,SUM(amount)
+FROM public.payment
+GROUP BY EXTRACT(month from payment_date)
+ORDER BY SUM(amount) DESC
+;
+
+SELECT
+	EXTRACT(DOW from payment_date) AS Day_of_week
+	,SUM(amount) AS total_amount
+FROM public.payment
+GROUP BY Day_of_week
+ORDER BY total_amount DESC
+;
+
+SELECT
+	EXTRACT(week from payment_date) AS Week
+	,customer_id
+	,SUM(amount) AS total_amount
+FROM public.payment
+GROUP BY Week, customer_id
+--HAVING EXTRACT(week from payment_date) = 18
+ORDER BY total_amount DESC
+;
+
+-- TO CHAR - get custom formats timestamp/date/numbers
+-- output is text
+
+SELECT
+	*
+	,EXTRACT(month from payment_date) AS Week
+	,customer_id
+	,TO_CHAR(payment_date, 'Day')
+	,TO_CHAR(payment_date, 'DY, Month')
+FROM public.payment
+;
+
+
+--Challenge
+SELECT
+	SUM(amount) AS total_amount
+	,TO_CHAR(payment_date, ' DY, DD/MM/YYYY') -- DY скорочена назва днів тижнів
+FROM public.payment
+GROUP BY 2
+ORDER BY total_amount
+;
+
+SELECT
+	SUM(amount) AS total_amount
+	,TO_CHAR(payment_date, 'Mon, YYYY') AS month_year -- MON скорочена назва місяця
+FROM public.payment
+GROUP BY 2
+ORDER BY total_amount
+;
+
+SELECT
+	SUM(amount) AS total_amount
+	--,TO_CHAR(payment_date, 'DY, time') AS month_year 
+	,TO_CHAR(payment_date, 'DY, HH:MI') AS time_24_hour -- HH:MM:SS години, хвилини, секунди
+FROM public.payment
+GROUP BY 2
+ORDER BY total_amount DESC
+;
+
+SELECT 
+	CURRENT_TIMESTAMP
+	,rental_date
+	,CURRENT_TIMESTAMP - rental_date
+	,EXTRACT(day from return_date - rental_date)
+FROM rental
+;
+
+--Challenge
+SELECT
+	customer_id
+	,EXTRACT( day from return_date - rental_date ) AS rental_day
+FROM public.rental
+WHERE customer_id = 35
+ORDER BY customer_id
+;
+
+SELECT
+	customer_id
+	,AVG(EXTRACT(day from return_date - rental_date)) AS avg_rent_duration
+FROM public.rental
+GROUP BY customer_id
+ORDER BY avg_rent_duration DESC
+;
+
+--5-------------------------------------------------------
