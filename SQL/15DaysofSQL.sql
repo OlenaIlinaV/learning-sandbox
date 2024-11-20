@@ -534,3 +534,146 @@ ORDER BY avg_rent_duration DESC
 ;
 
 --5-------------------------------------------------------
+--mathematical functional and operators
+
+--ceiling
+--floor
+
+SELECT
+	film_id
+	,rental_rate
+	,ROUND(rental_rate*1.4,2) as new_rental_rate
+	,CEILING(rental_rate*1.4) as new_rental_rate_2
+FROM film
+;
+
+SELECT
+    product_name
+    ,SUM(quantity_sold*price_per_unit) AS total_revenue
+FROM sales
+GROUP BY product_name
+ORDER BY total_revenue DESC
+LIMIT 1
+;
+
+--Challenge
+SELECT
+	film_id
+	,ROUND(rental_rate/replacement_cost*100,2) AS rate_replcost
+FROM public.film
+WHERE rental_rate < (0.04*replacement_cost)
+ORDER BY 2 
+;
+-- CASE
+-- CASE WHEN ... THEN....
+-- ELSE reesult
+-- END
+
+SELECT *
+FROM bookings.flights
+;
+
+SELECT 
+	COUNT(*) AS flights
+	,CASE
+		WHEN actual_departure IS NULL THEN 'no departure time'
+		WHEN actual_departure-scheduled_departure < '00:05' THEN 'On time'
+		WHEN actual_departure-scheduled_departure < '01:00' THEN 'A little bit late'
+		ELSE 'Very Late'
+	END is_late
+FROM bookings.flights
+GROUP BY is_late
+;
+
+-- Coding exercise
+SELECT
+    order_id
+    ,product_id
+    ,quantity
+    ,unit_price
+    ,CASE 
+        WHEN quantity > 1 THEN 0.9 * (quantity * unit_price) + shipping_fee
+        ELSE (quantity * unit_price) + shipping_fee
+    END total_price
+FROM sales_orders
+;
+
+-- Challenge
+SELECT * FROM bookings.ticket_flights LIMIT 10;
+SELECT * FROM bookings.flights LIMIT 10;
+
+--1
+SELECT
+	COUNT(*)
+	,CASE
+		WHEN amount < 20000 THEN 'Low price ticket'
+		WHEN amount < 150000 THEN 'Mid price ticket'
+		ELSE 'High price ticket'
+	END category
+FROM bookings.ticket_flights
+GROUP BY category
+;
+
+--2
+--"2017-09-12 08:50:00+02"
+SELECT
+	COUNT(*) AS flight
+	,CASE
+		WHEN TO_CHAR(scheduled_departure, 'Mon') IN ('Dec', 'Jan', 'Feb') THEN 'Winter'
+		WHEN TO_CHAR(scheduled_departure, 'Mon') IN ('Mar', 'Apr', 'May') THEN 'Spring'
+		WHEN TO_CHAR(scheduled_departure, 'Mon') IN ('Jun', 'Jul', 'Aug') THEN 'Summer'
+		WHEN TO_CHAR(scheduled_departure, 'Mon') IN ('Sep', 'Oct', 'Nov') THEN 'Fall'
+	END season
+FROM bookings.flights
+GROUP BY season
+;
+
+SELECT 
+	scheduled_departure
+	,TO_CHAR(scheduled_departure, 'Month')
+	,CASE
+		WHEN TRIM(TO_CHAR(scheduled_departure, 'Month')) IN ('December', 'January', 'February') THEN 'Winter'
+		WHEN TRIM(TO_CHAR(scheduled_departure, 'Month')) IN ('March', 'April', 'May') THEN 'Spring'
+		WHEN TRIM(TO_CHAR(scheduled_departure, 'Month')) IN ('June', 'July', 'August') THEN 'Summer'
+		WHEN TRIM(TO_CHAR(scheduled_departure, 'Month')) IN ('September', 'October', 'November') THEN 'Fall'
+	END season
+FROM bookings.flights
+;
+
+-- Challenge
+--3
+SELECT * FROM public.film LIMIT 10;
+
+SELECT *
+FROM (
+	SELECT
+		film_id
+		,title
+		,CASE
+			WHEN rating IN ('PG', 'PG-13') OR length > 210 THEN 'Great rating or long'
+			WHEN description ILIKE '%drama%' AND length > 90 THEN 'Long drama'
+			WHEN description ILIKE '%drama%' AND length <= 90 THEN 'Short drama'
+			WHEN rental_rate < 1 THEN 'Very cheap'
+		ELSE 'Other'
+		END category
+	FROM public.film
+) AS subquery
+WHERE category != 'Other'
+;
+
+SELECT 
+	SUM(CASE
+		WHEN rating IN ('PG', 'G') THEN 1
+	ELSE 0
+	END)
+FROM public.film
+;
+
+SELECT 
+	SUM(CASE WHEN rating = 'G' THEN 1 ELSE 0 END) AS "G"
+	,SUM(CASE WHEN rating = 'R' THEN 1 ELSE 0 END) AS "R"
+	,SUM(CASE WHEN rating = 'NC-17' THEN 1 ELSE 0 END) AS "NC-17"
+	,SUM(CASE WHEN rating = 'PG-13' THEN 1 ELSE 0 END) AS "PG-13"
+	,SUM(CASE WHEN rating = 'PG' THEN 1 ELSE 0 END) AS "PG"
+FROM public.film
+;
