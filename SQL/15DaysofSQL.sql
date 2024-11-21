@@ -677,3 +677,55 @@ SELECT
 	,SUM(CASE WHEN rating = 'PG' THEN 1 ELSE 0 END) AS "PG"
 FROM public.film
 ;
+
+-- Coding exercise
+SELECT
+    SUM(CASE WHEN category = 'Income' THEN amount ELSE 0 END) AS TotalIncome
+    ,SUM(CASE WHEN category = 'Expense' THEN amount ELSE 0 END) AS TotalExpenses
+    ,SUM(CASE WHEN category = 'Income' THEN amount ELSE 0 END) - SUM(CASE WHEN category = 'Expense' THEN amount ELSE 0 END) AS NetIncome
+	-- SUM(CASE WHEN category = 'Income' THEN amount ELSE -amount END) AS NetIncome
+FROM transactions
+;
+
+-- COALESCE
+-- Замініти значення NULL на щось інше
+SELECT
+	COALESCE(actual_arrival-scheduled_arrival, '0:00')
+FROM bookings.flights
+;
+
+SELECT
+    transaction_id
+    ,account_id
+    ,transaction_type
+    ,amount
+    ,COALESCE(description, 'Not Provided') AS description
+FROM transactions
+ORDER BY transaction_id ASC
+;
+
+-- Challenge after COALESCE and CAST
+SELECT
+	rental_date
+	,COALESCE(CAST(return_date AS VARCHAR), 'not return')
+FROM public.rental
+ORDER BY rental_date DESC
+;
+
+-- CAST
+-- change data type: VARCHAR(text), DATE, INT, BIGINT
+SELECT
+	COALESCE(CAST(actual_arrival-scheduled_arrival AS VARCHAR), 'Not arrived')
+FROM bookings.flights
+;
+
+-- REPLACE
+SELECT
+	CAST(REPLACE(passenger_id, ' ', '') AS BIGINT)
+FROM bookings.tickets
+;
+
+SELECT
+	CAST(REPLACE(flight_no, 'PG', '') AS BIGINT)
+FROM bookings.flights
+;
