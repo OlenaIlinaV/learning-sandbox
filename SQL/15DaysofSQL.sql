@@ -729,3 +729,62 @@ SELECT
 	CAST(REPLACE(flight_no, 'PG', '') AS BIGINT)
 FROM bookings.flights
 ;
+
+--6-------------------------------------------------------
+-- JOINS
+-- INNER JOIN - only rows appear in both tables
+-- OUTER JOIN 
+-- FULL OUTER JOIN - get all of the  raws from both tables
+-- LEFT - get all of the raws from Table A, and also both in table A and B are included. 
+-- But if there some rows that appear in Table B but not in A, these raws we don1t consider.
+-- RIGHT JOIN
+
+-- WE should have one common column
+
+SELECT 
+	p.customer_id
+	,p.amount
+	,c.first_name
+	,c.last_name
+	,c.email
+FROM public.payment AS p
+INNER JOIN public.customer AS c
+ON p.customer_id = c.customer_id
+;
+
+SELECT 
+	p.*
+	,first_name
+	,last_name
+	,email
+FROM public.payment p
+INNER JOIN public.staff s
+ON p.staff_id = s.staff_id
+WHERE p.staff_id = 1
+;
+
+SELECT 
+	s.fare_conditions
+	,COUNT(*) AS "Count"
+FROM flights f
+INNER JOIN 
+	boarding_passes b ON f.flight_id = b.flight_id
+INNER JOIN 
+	seats s ON b.seat_no = s.seat_no AND f.aircraft_code = s.aircraft_code
+GROUP BY s.fare_conditions
+ORDER BY 2 DESC
+;
+
+SELECT *
+FROM bookings.boarding_passes b
+FULL OUTER JOIN bookings.tickets t
+	ON b.ticket_no = t.ticket_no
+--WHERE boarding_no IS NULL
+WHERE b.ticket_no  IS NULL
+;
+
+SELECT *
+FROM bookings.aircrafts_data a
+LEFT JOIN bookings.flights f ON a.aircraft_code = f.aircraft_code
+WHERE f.flight_id IS NULL
+;
