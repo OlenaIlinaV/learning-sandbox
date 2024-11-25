@@ -788,3 +788,59 @@ FROM bookings.aircrafts_data a
 LEFT JOIN bookings.flights f ON a.aircraft_code = f.aircraft_code
 WHERE f.flight_id IS NULL
 ;
+
+-- Challenge LEFT OUTER JOIN
+
+SELECT *
+FROM bookings.seats
+WHERE seat_no = '13D'
+;
+
+SELECT *
+FROM bookings.boarding_passes
+;
+
+--Знайти найпопулярніше сидіння
+SELECT 
+	COUNT(bp.flight_id) as count_of_flights
+	,f.aircraft_code
+	,bp.seat_no
+FROM bookings.boarding_passes bp
+LEFT JOIN bookings.flights f ON bp.flight_id = f.flight_id
+GROUP BY f.aircraft_code, bp.seat_no
+ORDER BY count_of_flights DESC -- тут я намагалась виділити сидіння для ккожної авіалінії окремо
+;
+
+-- Не треба було враховувати що це різні літаки, просто беремо сидіння
+SELECT 
+	s.seat_no
+	,COUNT(b.ticket_no) as count_of_flights
+FROM bookings.seats s
+LEFT JOIN bookings.boarding_passes b ON s.seat_no = b.seat_no
+GROUP BY s.seat_no
+ORDER BY count_of_flights DESC
+;
+
+SELECT 
+	s.seat_no
+	,COUNT(b.ticket_no) as count_of_flights
+FROM bookings.seats s
+LEFT JOIN bookings.boarding_passes b ON s.seat_no = b.seat_no
+WHERE b.ticket_no IS NULL
+GROUP BY s.seat_no
+ORDER BY count_of_flights DESC
+;
+
+--Знайти найпопулярнішу лінію
+SELECT 
+	RIGHT(s.seat_no, 1)
+	,COUNT(b.ticket_no) as count_of_flights
+FROM bookings.seats s
+LEFT JOIN bookings.boarding_passes b ON s.seat_no = b.seat_no
+GROUP BY RIGHT(s.seat_no, 1)
+ORDER BY count_of_flights DESC
+;
+
+select RIGHT(seat_no, 1)
+from bookings.seats
+;
