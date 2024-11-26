@@ -844,3 +844,26 @@ ORDER BY count_of_flights DESC
 select RIGHT(seat_no, 1)
 from bookings.seats
 ;
+
+-- Challenge JOINS
+
+SELECT 
+	c.first_name
+	,c.last_name
+	,a.phone
+	,a.district
+FROM public.customer c
+LEFT JOIN public.address a ON  c.address_id=a.address_id
+WHERE district = 'Texas' -- information about customers from Texas
+;
+
+SELECT 
+	a.address_id
+	,a.address
+	,c.first_name
+	,c.last_name
+FROM public.address a
+LEFT JOIN public.customer c ON c.address_id=a.address_id
+WHERE c.customer_id IS NULL -- old addresses that are not related to any customer
+ORDER BY a.address_id
+;
