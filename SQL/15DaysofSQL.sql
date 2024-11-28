@@ -867,3 +867,79 @@ LEFT JOIN public.customer c ON c.address_id=a.address_id
 WHERE c.customer_id IS NULL -- old addresses that are not related to any customer
 ORDER BY a.address_id
 ;
+
+-- Joins on Multiple conditions
+-- коли в нашій таблиці 2 PK (праймарі кі)
+SELECT 
+	bp.seat_no
+	, ROUND(AVG(tf.amount),2) AS AvgPrice
+FROM bookings.boarding_passes bp
+LEFT JOIN bookings.ticket_flights tf 
+	ON bp.ticket_no = tf.ticket_no
+	AND bp.flight_id = tf.flight_id
+GROUP BY bp.seat_no
+;
+
+-- Joining multiple tables
+SELECT 
+	passenger_name
+	,scheduled_departure
+	,scheduled_arrival
+FROM bookings.tickets t
+LEFT JOIN bookings.ticket_flights tf ON t.ticket_no=tf.ticket_no
+LEFT JOIN bookings.flights f ON f.flight_id=tf.flight_id
+;
+
+-- Challenge Joining multiple tables
+SELECT 
+	customer_id
+	,first_name
+	,last_name
+	,email
+	,country
+FROM  public.customer c
+LEFT JOIN public.address a ON  c.address_id=a.address_id
+LEFT JOIN public.city ci ON ci.city_id=a.city_id
+LEFT JOIN public.country cou ON cou.country_id=ci.country_id
+WHERE country = 'Brazil'
+;
+
+-- Which passenger (passenger_name) has spent most amount in their bookings (total_amount)?
+SELECT
+	passenger_name
+	,SUM(total_amount) AS total_sum
+FROM bookings.tickets t
+LEFT JOIN bookings.bookings b ON t.book_ref=b.book_ref
+GROUP BY passenger_name
+ORDER BY total_sum DESC
+;
+
+-- Which fare_condition has ALEKSANDR IVANOV used the most?
+SELECT
+	passenger_name
+	,fare_conditions
+	,COUNT(fare_conditions) AS count_conditions
+FROM bookings.tickets t
+LEFT JOIN bookings.bookings b ON t.book_ref=b.book_ref
+LEFT JOIN bookings.ticket_flights tf ON tf.ticket_no=t.ticket_no
+WHERE passenger_name = 'ALEKSANDR IVANOV'
+GROUP BY passenger_name, fare_conditions
+ORDER BY count_conditions DESC -- "Economy"
+;
+
+-- Which title has GEORGE LINTON rented the most often?
+SELECT 
+	--c.customer_id
+	--,first_name ||' '||last_name AS full_name
+	title
+	,COUNT(title) AS count_rent
+FROM public.customer c
+LEFT JOIN public.rental r ON r.customer_id=c.customer_id
+LEFT JOIN public.inventory i ON i.inventory_id=r.inventory_id
+LEFT JOIN public.film f ON f.film_id=i.film_id
+WHERE first_name ||' '||last_name ='GEORGE LINTON'
+--WHERE first_name='GEORGE' and last_name='LINTON'
+GROUP BY title
+ORDER BY count_rent DESC
+LIMIT 1 -- CADDYSHACK JEDI - 3 times
+;
