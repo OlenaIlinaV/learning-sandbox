@@ -943,3 +943,55 @@ GROUP BY title
 ORDER BY count_rent DESC
 LIMIT 1 -- CADDYSHACK JEDI - 3 times
 ;
+
+--7-------------------------------------------------------
+-- UNION - combine rows
+-- Matched by the order, NOT by the name of the column
+-- The data type must match
+-- The number of columns should match
+-- If we have some value multiple times after the union in the final table we will have only one-time rows 
+-- якщо хочему зберегти дублікати строк то використовуємо UNION ALL
+
+SELECT first_name, 'actor' AS origin FROM public.actor
+UNION 
+SELECT first_name, 'customer' FROM public.customer
+UNION
+SELECT UPPER(first_name), 'staff' FROM public.staff
+ORDER BY 2  DESC
+;
+
+-- SUBQUERIES
+SELECT *
+FROM public.payment
+WHERE amount > (SELECT ROUND(AVG(amount),2) FROM public.payment)
+;
+
+SELECT *
+FROM public.payment
+WHERE customer_id = (SELECT customer_id FROM public.customer WHERE first_name = 'ADAM')
+;
+
+-- Challenge SUBQUERIES
+SELECT 
+	film_id
+	,title
+	,length
+FROM public.film
+WHERE length > (SELECT ROUND(AVG(length),2) FROM public.film) -- 115,27
+ORDER BY film_id
+;
+
+SELECT *
+FROM (
+	SELECT 
+		i.film_id
+		,title
+		,count(*) AS count_film
+	FROM public.inventory i
+	LEFT JOIN public.film f ON i.film_id=f.film_id
+	WHERE store_id = 2
+	GROUP BY i.film_id, title
+)
+WHERE count_film  > 3
+ORDER BY film_id
+;
