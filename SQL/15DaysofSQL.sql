@@ -995,3 +995,43 @@ FROM (
 WHERE count_film  > 3
 ORDER BY film_id
 ;
+
+--1
+SELECT 
+	first_name
+	,last_name
+FROM public.customer
+WHERE customer_id IN 
+	(SELECT customer_id
+	FROM public.payment
+	WHERE payment_date::DATE = '2020-01-25')
+;
+
+--2
+SELECT 
+	first_name
+	,email
+FROM public.customer
+WHERE customer_id IN 
+	(SELECT 
+		customer_id
+		--,SUM(amount)
+	FROM public.payment
+	GROUP BY customer_id
+	HAVING SUM(amount) > 30)
+;
+
+--3
+SELECT 
+	first_name
+	,last_name
+	,email
+FROM public.customer cus
+LEFT JOIN public.address add ON cus.address_id=add.address_id
+WHERE customer_id IN 
+	(SELECT 
+		p.customer_id
+	FROM public.payment p
+	GROUP BY customer_id
+	HAVING SUM(amount) > 100) AND  district = 'California'
+;
