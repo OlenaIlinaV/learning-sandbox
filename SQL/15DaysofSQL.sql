@@ -1035,3 +1035,152 @@ WHERE customer_id IN
 	GROUP BY customer_id
 	HAVING SUM(amount) > 100) AND  district = 'California'
 ;
+
+-- Subqueries in FROM
+SELECT ROUND(AVG(total_amount),2) AS avg_liftime_spent
+FROM
+(SELECT 
+	customer_id
+	,SUM(amount) AS total_amount
+FROM public.payment
+GROUP BY customer_id) sub
+;
+
+-- Challenge
+SELECT
+	ROUND(AVG(total_amount),2) AS daiky_rev_avg
+FROM (
+	SELECT 
+		DATE(payment_date)
+		,SUM(amount) AS total_amount
+	FROM public.payment
+	GROUP BY DATE(payment_date)) sub
+;
+
+-- Subqueries in SELECT
+SELECT
+	*
+	--,'hello'
+	,(SELECT ROUND(AVG(amount),2) FROM payment) AS avg_amount
+FROM public.payment
+;
+
+-- Challenge
+SELECT
+	*
+	, (SELECT MAX(amount) FROM public.payment) - amount AS difference
+FROM public.payment
+;
+
+-- Correlated Subqueries in WHERE
+
+--Show only thosee payments that have the highest amoount per customer
+SELECT
+	customer_id
+	,amount AS max_amount
+FROM public.payment p1
+WHERE amount  = (
+	SELECT MAX(amount)
+	FROM public.payment p2
+	WHERE p1.customer_id=p2.customer_id
+)
+ORDER BY customer_id
+;
+
+-- Challenge
+
+--1
+SELECT
+	film_id
+	,title
+	,replacement_cost
+	,rating
+FROM public.film f1
+WHERE replacement_cost = (
+	SELECT MIN(replacement_cost)
+	FROM public.film f2
+	WHERE f1.rating=f2.rating -- show only titles with lowest cost for each rating category
+)
+;
+
+--2
+SELECT
+	film_id
+	,title
+	,length
+	,rating
+FROM public.film f1
+WHERE length = (
+	SELECT MAX(length)
+	FROM public.film f2
+	WHERE f1.rating=f2.rating) -- show only titles with highestt lenght in each rating category
+;
+
+-- Correlated Subquery in SELECT
+
+-- SHOW the MAX amount for every customer
+SELECT
+	customer_id
+	,amount
+	,(SELECT MAX(amount) 
+	FROM public.payment a2
+	WHERE a1.customer_id=a2.customer_id
+	)sub
+FROM public.payment a1
+;
+
+-- Challenge
+
+-- 1
+-- Show all payments plus total amount for every customer + number of payments of each customers
+SELECT
+	payment_id
+	,customer_id
+	,amount
+	,(SELECT SUM(amount) 
+	FROM public.payment p4
+	WHERE p1.customer_id=p4.customer_id
+	)sum_amount_per_customer
+	,(SELECT MAX(amount) 
+	FROM public.payment p2
+	WHERE p1.customer_id=p2.customer_id
+	)max_amount_per_customer
+	,(SELECT COUNT(payment_id)
+	FROM public.payment p3
+	WHERE p1.customer_id=p3.customer_id
+	)number_payments_peer_customer
+FROM public.payment p1
+ORDER BY customer_id ASC, amount DESC
+;
+
+-- 2
+-- Show only films with the highest replacement costs in their rating category + avg costs in their category
+SELECT
+	film_id
+	,title
+	,replacement_cost
+	,rating
+	,(SELECT ROUND(AVG(replacement_cost),2)
+	FROM public.film f2
+	WHERE f1.rating=f2.rating) AS avg_repl_costs
+FROM public.film f1
+WHERE replacement_cost = (SELECT MAX(replacement_cost)
+							FROM public.film f3
+							WHERE f1.rating=f3.rating) -- in where without name
+ORDER BY title
+;
+
+-- 3
+-- Show payments with highest payment for each customer`s first_name, incl payment id
+SELECT
+	payment_id
+	,first_name
+	,amount
+FROM public.payment p1
+LEFT JOIN public.customer c ON p1.customer_id=c.customer_id
+WHERE amount =
+	(SELECT MAX(amount)
+	FROM public.payment p2
+	WHERE p2.customer_id=p1.customer_id
+	)
+;
