@@ -1184,3 +1184,118 @@ WHERE amount =
 	WHERE p2.customer_id=p1.customer_id
 	)
 ;
+
+--8-------------------------------------------------------
+--COURSE PROJECT
+
+-- 1
+-- What's the lowest replacement cost?
+SELECT DISTINCT(replacement_cost)
+FROM public.film
+ORDER BY replacement_cost
+--LIMIT 1 -- 9,99 the lowest cost
+;
+
+-- 2
+-- How many films have a replacement cost in the "low" group?
+SELECT
+	CASE 
+		WHEN replacement_cost <= 19.99 AND replacement_cost >= 9.99 THEN 'low' -- 514
+		WHEN replacement_cost > 24.99 THEN 'high'
+		ELSE  'medium'
+		END AS category
+	,COUNT(replacement_cost)
+FROM public.film
+GROUP BY category
+;
+
+-- 3
+-- In which category is the longest film and how long is it?
+SELECT
+	title
+	,length
+	,name
+FROM public.film f
+LEFT JOIN public.film_category fc ON f.film_id=fc.film_id
+LEFT JOIN public.category c ON c.category_id=fc.category_id
+WHERE name IN ('Drama', 'Sports')
+ORDER BY length DESC
+--LIMIT 1 -- Sports 184
+;
+
+-- 4 
+-- Which category (name) is the most common among the films?
+SELECT
+	name
+	,COUNT(*) AS namber_films
+FROM public.film f
+LEFT JOIN public.film_category fc ON f.film_id=fc.film_id
+LEFT JOIN public.category c ON c.category_id=fc.category_id
+GROUP BY name
+ORDER BY namber_films DESC -- Sports with 74 titles
+;
+
+-- 5
+-- Which actor is part of most movies?
+SELECT
+	first_name
+	,last_name
+	,COUNT(film_id) AS number_movies
+FROM public.actor a 
+LEFT JOIN public.film_actor fa ON a.actor_id=fa.actor_id
+GROUP BY first_name,last_name
+ORDER BY number_movies DESC -- Susan Davis with 54 movies
+;
+
+-- 6
+-- How many addresses are that?
+SELECT
+	add.address_id
+	,cus.customer_id
+FROM public.address add
+LEFT JOIN public.customer cus ON cus.address_id=add.address_id
+WHERE customer_id IS NULL -- 4 addresses
+;
+
+-- 7
+-- What city is that and how much is the amount?
+SELECT
+	--pay.customer_id
+	city
+	,SUM(amount) AS sum_paym
+FROM public.customer cus
+LEFT JOIN public.address add ON add.address_id=cus.address_id
+LEFT JOIN public.city cit ON cit.city_id=add.city_id
+LEFT JOIN public.payment pay ON pay.customer_id=cus.customer_id
+GROUP BY city
+ORDER BY sum_paym DESC -- Cape Coral with a total amount of 221.55
+;
+
+-- 8
+-- Which country, city has the least sales?
+SELECT
+	country ||', '||city AS country_city_store
+	,SUM(amount) AS total_amount
+FROM public.payment pay
+LEFT JOIN public.rental rent ON pay.rental_id=rent.rental_id
+LEFT JOIN public.inventory inv ON inv.inventory_id=rent.inventory_id
+LEFT JOIN public.store str ON str.store_id=inv.store_id
+LEFT JOIN public.address add ON add.address_id=str.address_id
+LEFT JOIN public.city cit ON cit.city_id=add.city_id
+LEFT JOIN public.country cnt ON cnt.country_id=cit.country_id
+GROUP BY country_city_store
+ORDER BY total_amount -- це для магазинів
+;
+
+SELECT
+	--pay.customer_id
+	country ||', '||city AS country_city_store
+	,SUM(amount) AS sum_paym
+FROM public.customer cus
+LEFT JOIN public.address add ON add.address_id=cus.address_id
+LEFT JOIN public.city cit ON cit.city_id=add.city_id
+LEFT JOIN public.payment pay ON pay.customer_id=cus.customer_id
+LEFT JOIN public.country cnt ON cnt.country_id=cit.country_id
+GROUP BY country_city_store
+ORDER BY sum_paym -- United States, Tallahassee with a total amount of 50.85.
+;
