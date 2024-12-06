@@ -1332,3 +1332,18 @@ FROM (
 	GROUP BY Date
 	) -- 1410.65
 ;
+
+-- 11
+-- Which two movies are the shortest on that list and how long are they?
+SELECT
+	film_id
+	,title
+	,length
+	,replacement_cost
+FROM public.film f1
+WHERE length > (SELECT AVG(length) 
+				FROM public.film f2
+				WHERE f1.replacement_cost=f2.replacement_cost
+				)
+ORDER BY length -- CELEBRITY HORN and SEATTLE EXPECTATIONS with 110 minutes.
+;
