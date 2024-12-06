@@ -1299,3 +1299,36 @@ LEFT JOIN public.country cnt ON cnt.country_id=cit.country_id
 GROUP BY country_city_store
 ORDER BY sum_paym -- United States, Tallahassee with a total amount of 50.85.
 ;
+
+-- 9
+-- Which staff_id makes on average more revenue per customer?
+SELECT
+	staff_id
+	,ROUND(AVG(sum_amount),2) AS c
+FROM(
+	SELECT
+		staff_id
+		,customer_id
+		,ROUND(SUM(amount),2) sum_amount
+	FROM public.payment
+	GROUP BY customer_id, staff_id
+	ORDER BY 1,2
+	) sub
+GROUP BY staff_id -- staff_id 2 with an average revenue of 56.64 per customer.
+;
+
+select * from public.payment;
+
+-- 10
+-- What is the daily average revenue of all Sundays?
+SELECT ROUND(AVG(total_revenue),2) AS avg_revenue
+FROM (
+	SELECT
+		DATE(payment_date) AS Date
+		--,EXTRACT(DOW from payment_date) AS Day_of_week -- DOW
+		,ROUND(SUM(amount),2) AS total_revenue
+	FROM public.payment
+	WHERE EXTRACT(DOW from payment_date) = 0 -- Sunday(start from 0)
+	GROUP BY Date
+	) -- 1410.65
+;
