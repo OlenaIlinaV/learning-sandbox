@@ -1347,3 +1347,113 @@ WHERE length > (SELECT AVG(length)
 				)
 ORDER BY length -- CELEBRITY HORN and SEATTLE EXPECTATIONS with 110 minutes.
 ;
+
+-- 12
+-- Which district has the highest average customer lifetime value?
+SELECT
+	district
+	,ROUND(AVG(total_amount),2) AS avg_per_district
+FROM(
+		SELECT
+			p.customer_id
+			,SUM(amount) AS total_amount
+			,district
+		FROM public.payment p
+		LEFT JOIN public.customer c ON c.customer_id=p.customer_id
+		LEFT JOIN public.address a ON a.address_id=c.address_id
+		GROUP BY p.customer_id, district
+		ORDER BY district
+	)
+GROUP BY district
+ORDER BY avg_per_district DESC -- Saint-Denis with an average customer lifetime value of 216.54.
+;
+
+-- 13
+-- What is the total revenue of the category 'Action' and what is the lowest payment_id in that category 'Action'?
+SELECT 
+	*
+	,SUM(amount) OVER (PARTITION BY name) AS total_amount_in_category -- WINDOW function
+FROM (
+		SELECT
+			p.payment_id
+			,amount
+			,name
+		FROM public.payment p
+		LEFT JOIN public.rental r ON r.rental_id=p.rental_id
+		LEFT JOIN public.inventory i ON i.inventory_id=r.inventory_id
+		LEFT JOIN public.film_category fc ON fc.film_id=i.film_id
+		LEFT JOIN public.category c ON c.category_id=fc.category_id
+	) AS sub
+WHERE name = 'Action'
+ORDER BY total_amount_in_category --  Total revenue in the category 'Action' is 4375.85 and the lowest payment_id in that category is 16055.
+;
+
+-- If we use Correlated query
+SELECT 
+	p.payment_id
+	,amount
+	,name
+	,(SELECT ROUND(SUM(amount),2) 
+	FROM public.payment p
+	LEFT JOIN public.rental r ON r.rental_id=p.rental_id
+	LEFT JOIN public.inventory i ON i.inventory_id=r.inventory_id
+	LEFT JOIN public.film_category fc ON fc.film_id=i.film_id
+	LEFT JOIN public.category c1 ON c1.category_id=fc.category_id
+	WHERE c1.name=c.name -- Correlated query (we have 'c' in mane query and 'c1' here)
+	) AS total_amount_in_category
+	
+FROM public.payment p
+LEFT JOIN public.rental r ON r.rental_id=p.rental_id
+LEFT JOIN public.inventory i ON i.inventory_id=r.inventory_id
+LEFT JOIN public.film_category fc ON fc.film_id=i.film_id
+LEFT JOIN public.category c ON c.category_id=fc.category_id
+
+WHERE name = 'Action'
+ORDER BY total_amount_in_category --  Total revenue in the category 'Action' is 4375.85 and the lowest payment_id in that category is 16055.
+;
+
+-- 14 Extremely difficult
+-- Task: Create a list with the top overall revenue of a film title (sum of amount per title) for each category (name).
+-- Which is the top-performing film in the animation category?
+
+SELECT 
+	name
+	,title
+	,SUM(amount) AS total_sum
+FROM public.payment p
+LEFT JOIN public.rental r ON r.rental_id=p.rental_id
+LEFT JOIN public.inventory i ON i.inventory_id=r.inventory_id
+LEFT JOIN public.film_category fc ON fc.film_id=i.film_id
+LEFT JOIN public.category c ON c.category_id=fc.category_id
+LEFT JOIN public.film f ON f.film_id=fc.film_id
+WHERE name = 'Animation'
+GROUP BY name, title
+ORDER BY total_sum DESC -- DOGMA FAMILY with 178.70.
+;
+
+SELECT
+	title
+	,name
+	,SUM(amount) as total
+FROM payment p
+LEFT JOIN rental r ON r.rental_id=p.rental_id
+LEFT JOIN inventory i ON i.inventory_id=r.inventory_id
+LEFT JOIN film f ON f.film_id=i.film_id
+LEFT JOIN film_category fc ON fc.film_id=f.film_id
+LEFT JOIN category c ON c.category_id=fc.category_id
+GROUP BY name,title
+HAVING SUM(amount) =     (SELECT MAX(total)
+			              FROM 
+                                (SELECT
+			                         title,
+                                     name,
+			                         SUM(amount) as total
+			              FROM payment p
+			              LEFT JOIN rental r ON r.rental_id=p.rental_id
+			              LEFT JOIN inventory i ON i.inventory_id=r.inventory_id
+	                      LEFT JOIN film f ON f.film_id=i.film_id
+				          LEFT JOIN film_category fc ON fc.film_id=f.film_id
+                          LEFT JOIN category c1 ON c1.category_id=fc.category_id
+				          GROUP BY name,title) sub
+			              WHERE c.name=sub.name)
+;
