@@ -1457,3 +1457,95 @@ HAVING SUM(amount) =     (SELECT MAX(total)
 				          GROUP BY name,title) sub
 			              WHERE c.name=sub.name)
 ;
+
+--9-------------------------------------------------------
+--MANAGING tables & databases
+
+--CREATE DATABASE
+CREATE DATABASE company_1 WITH encoding = 'UTF-8';
+
+COMMENT ON DATABASE company_1 IS 'This is our database'; -- We can seee t tin properties
+
+--DROP DATABASE - видалити
+DROP DATABASE company_1;
+
+SELECT COUNT(*) FROM film WHERE 'Behind the Scenes'=ANY(special_features);
+
+--CREATE TABLE
+CREATE TABLE staff(
+	staff_id SERIAL PRIMARY KEY -- Serial creates an auto-increment sequence (typically used with primary key)
+	,name VARCHAR(50) UNIQUE NOT NULL
+	--UNIQUE(name, staff_id)
+);
+
+CREATE TABLE director(
+	director_id SERIAL PRIMARY KEY
+	,director_account_name VARCHAR(20) UNIQUE
+	,first_name VARCHAR(50)
+	,last_name VARCHAR(50) DEFAULT 'Not specified'
+	,date_of_birth DATE
+	,address_id INT REFERENCES address(address_id))
+;
+
+CREATE TABLE online_sales(
+	transaction_id SERIAL PRIMARY KEY
+	,customer_id INT REFERENCES customer(customer_id)
+	,film_id INT REFERENCES film (film_id)
+	,amount NUMERIC(6,2) NOT NULL
+	,promotion_code VARCHAR(10) DEFAULT 'None')
+;
+
+--INSERT INTO - додати значення до створеної таблиці
+INSERT INTO online_sales
+(customer_d, film_id, amount) --якщо хочему внести дані тільки в конкретні колонки (не всі)
+VALUES (263,13,10.99),(270,12,22.99) --дві строки
+;
+
+INSERT INTO online_sales
+VALUES (1, 124, 65, 14.99, 'PROMO2022'), (2, 225, 231, 12.99, 'JULYPROMO'), (3, 119, 53, 15.99, 'SUMMERDEAL')
+;
+
+--ALTER TABLE
+
+--DROP COLUMN (IF EXISTS)
+ALTER TABLE staff
+DROP COLUMN IF EXISTS first_name;
+
+--ADD COLUMN (IF NOT EXISTS)
+ALTER TABLE staff
+ADD COLUMN IF NOT EXISTS date_of_birth DATE;
+
+--TYPE
+ALTER TABLE staff
+ALTER COLUMN  adddress_id TYPE SMALLINT;
+
+--RENAME
+ALTER TABLE staff
+RENAME COLUMN first_name TO name;
+
+ALTER TABLE staff
+RENAME TO staff_all;
+	
+--ADD CONSTRAINTS (обмежувальні умови)
+ALTER TABLE staff
+ALTER COLUMN last_name SET DEFAULT 'No data'; --SET NOT NULL
+
+ALTER TABLE staff
+ADD CONSTRAINT constraint_1 UNIQUE (column1, column2)
+
+ADD PRIMARY KEY 
+
+-- Challenge: ALTER TABLE
+ALTER TABLE public.director
+ALTER COLUMN director_account_name TYPE VARCHAR(30),
+ALTER COLUMN last_name DROP DEFAULT,
+ALTER COLUMN last_name SET NOT NULL,
+ADD COLUMN email VARCHAR(40); -- можемо робити разом
+
+SELECT * FROM public.directors;
+
+ALTER TABLE public.director
+RENAME COLUMN director_account_name TO account_name; -- можемо робити тільки окремо
+
+ALTER TABLE public.director
+RENAME TO directors;
