@@ -1549,3 +1549,37 @@ RENAME COLUMN director_account_name TO account_name; -- можемо робит�
 
 ALTER TABLE public.director
 RENAME TO directors;
+
+--DROP TABLE|SCHEMA - робити акуратно, не можно бути востановити!!!!
+DROP TABLE public.directors; -- Deletes table
+TRUNCATE TABLE public.directors; -- Delete all data in table
+
+--CHECK
+CREATE TABLE director (
+	name TEXT CHECK CONSTRAINT name_length (length(name) >1)); -- перевиряємо чи викогуються умови
+--можно не давати імя - CONSTRAINT name_length
+
+-- Challenge: CHECK
+CREATE TABLE songs(
+	song_id SERIAL PRIMARY KEY
+	,song_name VARCHAR(30) NOT NULL
+	,genre VARCHAR(30)  DEFAULT 'Not defined'
+	,price NUMERIC(4,2) CHECK(price >= 1.99)
+	,release_date DATE CONSTRAINT date_check CHECK(release_date BETWEEN '1950-01-01' AND '2024-12-11')
+);
+
+SELECT * FROM public.songs;
+
+INSERT INTO songs
+(song_id, song_name, price, release_date) 
+VALUES (4,'SQL song',0.99,'2022-01-07'); --ERROR - check constraint "songs_price_check" 
+
+ALTER TABLE songs
+DROP CONSTRAINT songs_price_check; -- Defolt name - "tablename-whatwecheck-check"
+
+ALTER TABLE songs
+ADD CONSTRAINT songs_price_check CHECK(price >= 0.99);
+
+INSERT INTO songs
+(song_id, song_name, price, release_date) 
+VALUES (4,'SQL song',0.99,'2022-01-07');
