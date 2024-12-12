@@ -1583,3 +1583,37 @@ ADD CONSTRAINT songs_price_check CHECK(price >= 0.99);
 INSERT INTO songs
 (song_id, song_name, price, release_date) 
 VALUES (4,'SQL song',0.99,'2022-01-07');
+
+--10-------------------------------------------------------
+--Views & Data Manipulation
+
+--UPDATE
+UPDATE songs
+SET genre = 'Country music'
+WHERE song_id=4;
+
+--Challenge
+
+--1
+CREATE TABLE customer_my AS
+SELECT *
+FROM customer;  -- зробити дублікат таблиці
+
+ALTER TABLE customer_my
+ADD COLUMN initials VARCHAR(10);
+
+UPDATE customer_my
+SET initials = SUBSTRING(first_name,1,1) ||'.'||SUBSTRING(last_name,1,1)||'.';
+
+SELECT * FROM public.customer_my;
+
+CREATE TABLE film_my AS
+SELECT *
+FROM film;
+
+--2
+UPDATE film_my
+SET rental_rate = 1.99
+WHERE rental_rate =  0.99;
+
+SELECT * FROM film_my;
