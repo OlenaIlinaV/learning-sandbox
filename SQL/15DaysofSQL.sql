@@ -1617,3 +1617,41 @@ SET rental_rate = 1.99
 WHERE rental_rate =  0.99;
 
 SELECT * FROM film_my;
+
+--DELETE
+DELETE FROM songs
+WHERE song_id IN (3,4)
+RETURNING song_id;
+
+--Challenge
+SELECT * FROM public.payment
+WHERE payment_id IN (17064,17067);
+
+DELETE FROM public.payment
+WHERE payment_id IN (17064,17067) -- delete 2 rows
+RETURNING *;
+
+--CREATE TABLE ...AS
+CREATE TABLE custommer_address
+AS	
+SELECT first_name, last_name, email, address, city
+FROM customer c
+LEFT JOIN address a ON c.address_id=a.address_id
+LEFT JOIN public.city  ci ON ci.city_id=a.city_id
+;
+
+SELECT * FROM custommer_address;
+
+--Challenge
+CREATE TABLE customer_spendings
+AS
+SELECT 
+	first_name ||' '||last_name AS full_name
+	,SUM(amount) AS total_amount
+FROM public.payment p 
+LEFT JOIN public.customer c ON p.customer_id=c.customer_id
+GROUP BY full_name
+ORDER BY full_name
+;
+
+SELECT * FROM customer_spendings;
