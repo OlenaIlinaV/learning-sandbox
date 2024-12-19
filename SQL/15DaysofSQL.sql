@@ -1655,3 +1655,63 @@ ORDER BY full_name
 ;
 
 SELECT * FROM customer_spendings;
+
+-- CREATE VIEW -- Працює як "віртуальна таблиця", але дані завжди актуальні, оскільки генеруються в реальному часі.
+-- Better than CREATE TABLE AS:
+-- to avoid redundant(зайвий) data storage
+-- want to have our table dynamic (if data from main table changes)
+-- не підходить для складних запросів, щось просте
+CREATE VIEW customer_spendings
+AS
+SELECT ....
+
+CREATE VIEW v_films_category -- v_
+AS
+SELECT title
+	,length
+	,name
+FROM public.film f
+LEFT JOIN public.film_category fc ON f.film_id=fc.film_id
+LEFT JOIN public.category c ON c.category_id=fc.category_id
+WHERE name IN ('Action', 'Comedy')
+ORDER BY length DESC
+;
+
+SELECT * FROM films_category;
+
+-- CREATE MATERIALIZED VIEW
+-- Дані зберігаються фізично на диску
+-- need to be updated manualy
+-- Швидше, оскільки результати кешуються
+CREATE MATERIALIZED VIEW mv_customer_spendings -- mv_
+AS
+SELECT ....
+	
+REFRESH MATERIALIZED VIEW customer_spendings; -- update data
+
+--ALTER VIEW|DROP VIEW|CREATE OR REPLACE VIEW
+
+--Rename the view to v_customer_information
+ALTER VIEW v_customer_info
+RENAME TO v_customer_information;
+
+--Rename the customer_id column to c_id
+ALTER VIEW v_customer_info
+RENAME COLUMN customer_id TO c_id;
+
+CREATE OR REPLACE VIEW v_customer_information
+AS
+SELECT 
+    cu.customer_id as c_id,
+    cu.first_name || ' ' || cu.last_name AS name,
+    a.address,
+    a.postal_code,
+    a.phone,
+    city.city,
+    country.country,
+    CONCAT(LEFT(cu.first_name,1),LEFT(cu.last_name,1)) as initials
+FROM customer cu
+JOIN address a ON cu.address_id = a.address_id
+JOIN city ON a.city_id = city.city_id
+JOIN country ON city.country_id = country.country_id
+ORDER BY c_id;
