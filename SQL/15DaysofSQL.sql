@@ -1715,3 +1715,51 @@ JOIN address a ON cu.address_id = a.address_id
 JOIN city ON a.city_id = city.city_id
 JOIN country ON city.country_id = country.country_id
 ORDER BY c_id;
+
+--10-------------------------------------------------------
+--WINDOW FUNCTIONS
+
+SELECT *
+	,ROUND(AVG(amount) OVER (PARTITION BY customer_id),2)
+FROM public.payment
+;
+
+SELECT *
+	,COUNT(*) OVER (PARTITION BY customer_id, staff_id)
+FROM public.payment
+;
+
+--Challenge
+--1
+SELECT
+	f.film_id
+	,title
+	,length
+	,name AS category
+	,ROUND(AVG(length) OVER (PARTITION BY name),2)
+FROM public.film f
+LEFT JOIN public.film_category fc ON fc.film_id=f.film_id
+LEFT JOIN public.category c ON c.category_id=fc.category_id
+ORDER BY 1
+;
+--2
+SELECT 
+	*
+	,COUNT(payment_id) OVER (PARTITION BY customer_id, amount)
+FROM public.payment
+ORDER BY 1
+;
+
+--OVER with ORDER BY
+SELECT
+	*
+	,SUM(amount) OVER (ORDER BY payment_date)  -- поступово додається як сума до наступної строки
+FROM public.payment
+;
+
+SELECT
+	*
+	,SUM(amount) OVER (PARTITION BY customer_id 
+					   ORDER BY payment_date, payment_id)  -- тут починяється з початку для кожного нового customer_id 
+FROM public.payment
+;
