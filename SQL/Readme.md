@@ -44,6 +44,9 @@ USING(...id)
 
 ![alt text](https://miro.medium.com/v2/resize%3Afit%3A1100/format%3Awebp/1%2Aav8Om3HpG1MC7YTLKvyftg.png)
 
+**Joins on Multiple conditions**
+![alt text](image.png)
+
 ## UNION
 **INTERSECT** and **EXCEPT**
 
