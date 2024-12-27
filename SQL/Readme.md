@@ -58,6 +58,19 @@ USING(...id)
 
 # CTE (Common Table Expression)
 
+# Subquery
+
+## Subquery: WHERE, FROM, SELECT
+
+A subquery is a query that is nested (гніздитися, вставляти) inside a SELECT , INSERT , UPDATE , or DELETE statement, or inside another subquery.
+
+![alt text](image-2.png)
+
+## Correlated Subquery: WHERE, SELECT
+
+A correlated subquery is a subquery that contains a reference to a table that also appears in the outer query.
+![alt text](image-1.png)
+
 # Window functions
 https://data-life-ua.com/db/mastering-sql-window-functions-guide/
 
