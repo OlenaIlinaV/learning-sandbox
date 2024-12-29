@@ -1763,3 +1763,70 @@ SELECT
 					   ORDER BY payment_date, payment_id)  -- тут починяється з початку для кожного нового customer_id 
 FROM public.payment
 ;
+
+SELECT
+	flight_id
+	,departure_airport
+	,SUM(actual_arrival-scheduled_arrival) OVER (ORDER BY flight_id, departure_airport) -- Відсутність PARTITION BY - Усі рядки обробляються як єдина група (глобально для всієї таблиці).
+-- SUM() обчислює кумулятивну суму (running total) всіх попередніх і поточного значення для кожного рядка, враховуючи весь набір даних.
+FROM bookings.flights
+;
+
+SELECT
+	flight_id
+	,departure_airport
+	,SUM(actual_arrival-scheduled_arrival) OVER (PARTITION BY departure_airport -- Дані розбиваються на групи (PARTITION) за значенням departure_airport.
+												ORDER BY flight_id, departure_airport)
+FROM bookings.flights
+;
+--RANK() | DENSE_RANK()
+SELECT
+	*
+FROM(
+	SELECT
+		name
+		,country
+		,COUNT(payment_id)
+		,DENSE_RANK() OVER (PARTITION BY country ORDER BY count(*)) AS rank
+	FROM public.customer_list c
+	LEFT JOIN  public.payment p ON c.id=p.customer_id
+	GROUP BY name, country
+	) sub
+WHERE rank<=3
+;
+
+--FIRST_VALUE
+SELECT
+		name
+		,country
+		,COUNT(*)
+		,FIRST_VALUE(count(*)) OVER (PARTITION BY country ORDER BY count(*) DESC) AS max_value_country
+		,COUNT(*) - FIRST_VALUE(count(*)) OVER (PARTITION BY country ORDER BY count(*) DESC) AS diff
+	FROM public.customer_list c
+	LEFT JOIN  public.payment p ON c.id=p.customer_id
+	GROUP BY name, country
+;
+
+--LEAD & LAG
+SELECT
+		name
+		,country
+		,COUNT(*)
+		,LEAD(COUNT(*)) OVER (PARTITION BY country ORDER BY count(*) DESC) AS next_value_count
+		,LEAD(COUNT(*)) OVER (PARTITION BY country ORDER BY count(*) DESC) - COUNT(*) AS diff
+		,LAG(COUNT(*)) OVER (PARTITION BY country ORDER BY count(*) DESC) AS previous_value_count
+	FROM public.customer_list c
+	LEFT JOIN  public.payment p ON c.id=p.customer_id
+	GROUP BY name, country
+;
+
+--Challenge
+SELECT
+	SUM(amount) AS sum
+	,DATE(payment_date) AS day
+	,LAG(SUM(amount)) OVER(ORDER BY DATE(payment_date)) AS previous_day
+	,SUM(amount)-LAG(SUM(amount)) OVER(ORDER BY DATE(payment_date)) AS difference
+	,ROUND((SUM(amount)-LAG(SUM(amount)) OVER(ORDER BY DATE(payment_date)))/LAG(SUM(amount)) OVER(ORDER BY DATE(payment_date))*100,2) AS percentage_growth
+FROM public.payment
+GROUP BY day
+;
