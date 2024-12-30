@@ -2331,3 +2331,65 @@ LEFT JOIN public.departments d ON d.department_id=e.department_id
 	) sub
 WHERE rank = 1 
 ;
+
+--14-------------------------------------------------------
+--User-dedfined functions
+CREATE FUNCTION first_funct(p1 INT, p2 INT) -- не забуваємо про дата тайп
+		RETURNS INT
+		LANGUAGE plpgsql -- так пишемо стандартно
+AS
+$$ -- body function
+DECLARE
+p3 INT; -- use semicolon after each command
+BEGIN
+SELECT p1+p2+3
+INTO p3; -- write rerzult in our variable p3
+RETURN p3; -- return our variable
+END;
+$$
+
+CREATE FUNCTION count_rr(min_r decimal(4,2), max_r decimal(4,2)) -- не забуваємо про дата тайп
+		RETURNS INT
+		LANGUAGE plpgsql -- так пишемо стандартно
+AS
+$$
+DECLARE
+movie_count INT; -- use semicolon after each command
+BEGIN
+SELECT COUNT(*)
+INTO movie_count -- write rerzult in our variable movie_count
+FROM public.film
+WHERE rental_rate BETWEEN min_r AND max_r;
+RETURN movie_count; -- return our variable
+END;
+$$
+
+SELECT count_rr(3,6);
+
+--Challenge
+DROP FUNCTION IF EXISTS name_search(VARCHAR, VARCHAR);
+
+CREATE FUNCTION name_search(f_name VARCHAR(30),l_name VARCHAR(30)) -- не забуваємо про дата тайп
+		RETURNS decimal(6,2)
+		LANGUAGE plpgsql -- так пишемо стандартно
+AS
+$$
+DECLARE
+sum_amount decimal(6,2); -- use semicolon after each command
+BEGIN
+SELECT SUM(amount)
+INTO sum_amount -- write rerzult in our variable movie_count
+FROM public.payment p
+LEFT JOIN public.customer c ON p.customer_id=c.customer_id
+WHERE first_name=f_name AND last_name=l_name;
+RETURN sum_amount; -- return our variable
+END;
+$$
+
+SELECT name_search ('AMY','LOPEZ');
+
+SELECT 
+	first_name
+	,last_name
+	,name_search (first_name,last_name)
+FROM public.customer;
