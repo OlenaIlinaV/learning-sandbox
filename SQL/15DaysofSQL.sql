@@ -2393,3 +2393,123 @@ SELECT
 	,last_name
 	,name_search (first_name,last_name)
 FROM public.customer;
+
+--TRANSACTION
+CREATE TABLE acc_balance (
+    id SERIAL PRIMARY KEY,
+    first_name TEXT NOT NULL,
+	last_name TEXT NOT NULL,
+    amount DEC(9,2) NOT NULL    
+);
+
+INSERT INTO acc_balance
+VALUES 
+(1,'Tim','Brown',2500),
+(2,'Sandra','Miller',1600)
+
+SELECT * FROM acc_balance;
+
+BEGIN;
+UPDATE acc_balance
+SET amount = amount - 100
+WHERE id = 1;
+UPDATE acc_balance
+SET amount = amount + 100
+WHERE id = 2;
+COMMIT;
+
+--Challenge
+BEGIN;
+UPDATE public.employees
+SET position_title = 'Head of Sales'
+WHERE  emp_id= 2;
+UPDATE public.employees
+SET salary = 12587.00
+WHERE  emp_id= 2;
+UPDATE public.employees
+SET position_title = 'Head of BI'
+WHERE emp_id = 3;
+UPDATE public.employees
+SET salary = 14614.00
+WHERE emp_id = 3;
+COMMIT;
+
+--ROLLBACKS - якщо ми ще не закомітили зміни то можемо зробити відміну
+
+--ROLLBACK - ends transaction (undo everything in the current trabsaction that has not been committed yet)
+BEGIN;
+operation1;
+operation2;
+ROLLBACK;
+COMMIT;
+
+--ROLLBACK TO SAVEPOINT  - doesn`t end transaction
+BEGIN;
+operation1;
+operation2;
+SAVEPOINT op2
+operation3;
+ROLLBACK TO SAVEPOINT op2;
+COMMIT;
+
+--STORED PROCEDURES
+CREATE OR REPLACE PROCEDURE emp_swap
+(emp1 INT, emp2 INT)
+LANGUAGE plpgsql
+AS
+$$
+DECLARE
+salary1 DECIMAL(8,2); -- variables
+salary2 DECIMAL(8,2);
+position1 TEXT;
+position2 TEXT;
+BEGIN
+	
+-- store values in viriable
+SELECT salary
+INTO salary1
+FROM public.employees
+WHERE emp_id = 1;
+
+SELECT salary
+INTO salary2
+FROM public.employees
+WHERE emp_id = 2;
+
+SELECT position_title
+INTO position1
+FROM public.employees
+WHERE emp_id = 1;
+
+SELECT position_title
+INTO position2
+FROM public.employees
+WHERE emp_id = 2;
+
+--update salary
+UPDATE public.employees
+SET salary = salary2
+WHERE emp_id=1;
+
+UPDATE public.employees
+SET salary = salary1
+WHERE emp_id=2;
+
+--update titles
+UPDATE public.employees
+SET position_title = position2
+WHERE emp_id=1;
+
+UPDATE public.employees
+SET position_title = position1
+WHERE emp_id=2;
+	
+COMMIT;
+END;
+$$
+
+CALL emp_swap (1,2);
+SELECT * FROM public.employees;
+
+--15-------------------------------------------------------
+--INDEXES, PARTITING & QUERY OPTIMIZATION
