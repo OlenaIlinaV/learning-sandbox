@@ -1716,7 +1716,7 @@ JOIN city ON a.city_id = city.city_id
 JOIN country ON city.country_id = country.country_id
 ORDER BY c_id;
 
---10-------------------------------------------------------
+--11-------------------------------------------------------
 --WINDOW FUNCTIONS
 
 SELECT *
@@ -1829,4 +1829,150 @@ SELECT
 	,ROUND((SUM(amount)-LAG(SUM(amount)) OVER(ORDER BY DATE(payment_date)))/LAG(SUM(amount)) OVER(ORDER BY DATE(payment_date))*100,2) AS percentage_growth
 FROM public.payment
 GROUP BY day
+;
+
+--12-------------------------------------------------------
+--GROUPING SETS
+SELECT
+	TO_CHAR(payment_date, 'Month') AS month
+	,staff_id
+	,SUM(amount)
+FROM public.payment
+GROUP BY
+	GROUPING SETS (
+	(staff_id)
+	,(month)
+	,(staff_id, month))
+ORDER BY 1,2
+;
+
+--Challenge
+SELECT
+	first_name
+	,last_name
+	,staff_id
+	,SUM(amount)
+FROM public.payment p
+LEFT JOIN public.customer c ON c.customer_id=p.customer_id
+GROUP BY
+	GROUPING SETS (
+	(first_name,last_name)
+	,(first_name,last_name,staff_id)
+	,(staff_id)
+	)
+ORDER BY 1,3
+;
+
+---ROLLUP - hierarchy
+SELECT
+	'Q'||TO_CHAR(book_date, 'Q') AS quarter
+	,EXTRACT(month from book_date) AS month
+	,TO_CHAR(book_date, 'W') AS week_in_month
+	,DATE(book_date)
+	,SUM(total_amount) AS booking_amount
+FROM bookings.bookings
+GROUP BY
+ROLLUP(
+	'Q'||TO_CHAR(book_date, 'Q') 
+	,EXTRACT(month from book_date) 
+	,TO_CHAR(book_date, 'W') 
+	,DATE(book_date))
+ORDER BY 1,2,3
+;
+
+--CUBE - all posible combination in grouping
+SELECT
+	customer_id
+	,staff_id
+	,DATE(payment_date)
+	,SUM(amount)
+FROM public.payment
+GROUP BY
+CUBE(
+	customer_id
+	,staff_id
+	,DATE(payment_date)
+)
+ORDER BY 1,2,3
+;
+--Challenge
+SELECT
+	p.customer_id
+	,DATE(payment_date) AS date
+	,title
+	,SUM(amount) AS total
+FROM  public.payment p
+LEFT JOIN public.rental r ON r.rental_id=p.rental_id
+LEFT JOIN public.inventory i ON i.inventory_id=r.inventory_id
+LEFT JOIN public.film f ON f.film_id=i.film_id
+GROUP BY
+CUBE(
+	p.customer_id
+	,DATE(payment_date)
+	,title
+	)
+ORDER BY 1,2,3
+;
+
+--SELF JOIN
+
+CREATE TABLE employee (
+	employee_id INT,
+	name VARCHAR (50),
+	manager_id INT
+);
+
+INSERT INTO employee
+VALUES
+	(1, 'Liam Smith', NULL),
+	(2, 'Oliver Brown', 1),
+	(3, 'Elijah Jones', 1),
+	(4, 'William Miller', 1),
+	(5, 'James Davis', 2),
+	(6, 'Olivia Hernandez', 2),
+	(7, 'Emma Lopez', 2),
+	(8, 'Sophia Andersen', 2),
+	(9, 'Mia Lee', 3),
+	(10, 'Ava Robinson', 3);
+
+SELECT * FROM employee;
+
+SELECT
+	emp.employee_id
+	,emp.name AS employee
+	,mng.name AS manager
+	,mng2.name AS manager2
+FROM employee emp
+LEFT JOIN employee mng ON emp.manager_id=mng.employee_id
+LEFT JOIN employee mng2 ON mng.manager_id=mng2.employee_id
+;
+
+--Challenge
+SELECT
+	t1.title
+	,t2.title
+	,t1.length
+FROM public.film t1
+LEFT JOIN public.film t2 ON t1.length=t2.length
+WHERE t1.title!=t2.title
+ORDER BY t1.length DESC
+;
+
+--CROSS JOIN
+--GET all possible combinations of rows
+SELECT
+	staff_id
+	,store.store_id
+	,last_name
+FROM public.staff
+CROSS JOIN public.store
+;
+
+--NATURAL JOIN
+--Automatically joins using columns with the same column name
+--Working wiith different Joins (Left, Inner...)
+SELECT
+*
+FROM public.payment
+NATURAL LEFT JOIN public.customer -- customer_id in both table
 ;
