@@ -2513,3 +2513,133 @@ SELECT * FROM public.employees;
 
 --15-------------------------------------------------------
 --INDEXES, PARTITING & QUERY OPTIMIZATION
+
+--CREATE USER
+CREATE USER user_name
+WITH PASSWORD 'dddd'; --public chemas
+
+--Role=User+login
+CREATE ROLE user_name
+WITH LOGIN PASSWORD 'dddd'; 
+
+CREATE USER sarah
+WITH PASSWORD 'sarah1234'; 
+
+CREATE ROLE alex
+WITH LOGIN PASSWORD 'alex1234';
+
+--PRIVILEGES
+--GRANT
+GRANT SELECT
+ON customer
+--ON ALL TABLES IN SHEMA chema_name
+TO alex;
+
+--REVOKE
+REVOKE prrivilige
+ON database_object
+FROM USER |ROLE |PUBLIC
+GRANTED BY USER |ROLE;
+
+
+--PRACTICE
+
+-- Create users
+CREATE USER ria
+WITH PASSWORD 'ria123';
+
+CREATE USER mike
+WITH PASSWORD 'mike123';
+
+-- Create roles
+CREATE ROLE read_only;
+CREATE ROLE read_update;
+
+-- Grant usage (already granted)
+GRANT USAGE
+ON SCHEMA public
+TO read_only;
+
+-- Grant SELECT on tables
+GRANT SELECT
+ON ALL TABLES IN SCHEMA public
+TO read_only;
+
+-- Assign read_only to read_update role
+GRANT read_only
+TO read_update;
+
+-- Grant all privileges on all tables in public to role
+GRANT ALL
+ON ALL TABLES IN SCHEMA public
+TO read_update;
+
+-- Revoke some privileges
+REVOKE DELETE, INSERT
+ON ALL TABLES IN SCHEMA public
+FROM read_update;
+
+-- Assign role to users
+GRANT read_update
+TO ria;
+
+-- DROP roles
+DROP ROLE mike;
+DROP ROLE read_update;
+
+-- Removing dependancies
+DROP OWNED BY read_update;
+DROP ROLE read_update;
+
+--Challenge
+CREATE USER mia
+WITH PASSWORD 'mia123';
+
+CREATE ROLE analyst_emp;
+
+-- Grant privileges
+GRANT SELECT
+ON ALL TABLES IN SCHEMA public
+TO analyst_emp;
+
+GRANT INSERT, UPDATE
+ON employees
+TO analyst_emp;
+
+-- Add permission to create databases
+ALTER ROLE analyst_emp CREATEDB;
+
+-- Assign role to user
+GRANT analyst_emp TO mia;
+
+--INDEXES
+
+--B-tree Indexes
+CREATE INDEX index_name
+ON table_name [USING method]
+	(
+	column_name1,
+	column_name2
+	);
+
+SELECT
+(SELECT AVG(amount)
+	FROM public.payment p2
+	WHERE p2.rental_id=p1.rental_id)
+FROM payment p1; -- 31 сек
+
+CREATE INDEX index_rental_id_payment
+ON public.payment
+(rental_id); --1 сек
+
+DROP INDEX index_rental_id_payment;
+
+SELECT * FROM flights f2
+WHERE flight_no < (SELECT MAX(flight_no)
+				  FROM flights f1
+				   WHERE f1.departure_airport=f2.departure_airport
+				   ); --44s
+CREATE INDEX flight_no_index
+ON flights
+(departure_airport,flight_no);--0,5
+DROP INDEX index_flight_id;
